@@ -1,8 +1,10 @@
+require('dotenv').config(); 
+
 const express = require('express');
 const { EtherPortClient } = require("etherport-client");
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { Digital, Board } = require('johnny-five');
+const { Board, Pin } = require('johnny-five');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,7 +14,7 @@ app.use(bodyParser.json());
 
 const board = new Board({
     port: new EtherPortClient({
-        host: 'IP_ADDR',
+        host: process.env.IP,
         port: 3030,
     }),
     repl: false
@@ -21,23 +23,24 @@ const board = new Board({
 let led;
 
 board.on('ready', () => {
-    led = new Digital({ pin: 4 });
-    led.off();
+    board.pinMode(4, Pin.OUTPUT)
+    led = new Pin(4);
+    led.low();
     console.log('Placa pronta');
 });
 
 app.get('/ligar-led', (req, res) => {
     if(led) {
-        led.on();
+        led.high();
         res.send('LED ligado');
     } else {
         res.status(500).send('Erro');
     }
 })
 
-app.post('/desligar-led', (req, res) => {
+app.get('/desligar-led', (req, res) => {
     if (led) {
-      led.off(); // Desligue o LED
+      led.low(); // Desligue o LED
       res.send('LED desligado.');
     } else {
       res.status(500).send('O NodeMCU ESP8266 não está pronto.');
