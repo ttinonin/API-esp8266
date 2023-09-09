@@ -1,4 +1,5 @@
 const express = require('express');
+const { EtherPortClient } = require("etherport-client");
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Digital, Board } = require('johnny-five');
@@ -9,7 +10,13 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const board = new Board();
+const board = new Board({
+    port: new EtherPortClient({
+        host: 'IP_ADDR',
+        port: 3030,
+    }),
+    repl: false
+});
 
 let led;
 
